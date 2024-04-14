@@ -1,8 +1,8 @@
 public class Arguments {
-   String      input;      // input file path
-   String      output;     // output file path
-   Mode        mode;       // encryption mode (encrypt or decrypt)
-   Algorithm   algorithm;  // which algorithm to use for encryption
+   public String     input;      // input file path
+   public String     output;     // output file path
+   public Mode       mode;       // encryption mode (encrypt or decrypt)
+   public Algorithm  algorithm;  // which algorithm to use for encryption
    
    public static enum Mode {
       Encrypt,
