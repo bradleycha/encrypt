@@ -1,6 +1,7 @@
 public class Arguments {
    public String     input;      // input file path
    public String     output;     // output file path
+   public String     secrets;    // secreits file path or 'null' for password prompt
    public Mode       mode;       // encryption mode (encrypt or decrypt)
    public Algorithm  algorithm;  // which algorithm to use for encryption
    
@@ -107,6 +108,7 @@ public class Arguments {
       public boolean    version;
       public String     input;
       public String     output;
+      public String     secrets;
       public Mode       mode;
       public Algorithm  algorithm;
 
@@ -115,6 +117,7 @@ public class Arguments {
          this.version   = false;
          this.input     = null;
          this.output    = null;
+         this.secrets   = null;
          this.mode      = Mode.Encrypt;
          this.algorithm = null;
          return;
@@ -152,6 +155,7 @@ public class Arguments {
 
          args.input     = this.input;
          args.output    = this.output;
+         args.secrets   = this.secrets;
          args.mode      = this.mode;
          args.algorithm = this.algorithm;
          return args;
@@ -203,6 +207,18 @@ public class Arguments {
                                           | Default value:
                                           | None (required argument)
                                           |-------------------------------------
+            -s, --secrets=[file path]     | Specifies the file path to read
+                                          | encryption secrets from.  If not
+                                          | specified or an empty string is
+                                          | given, a password prompt will be 
+                                          | used instead.
+                                          | 
+                                          | Valid values:
+                                          | Any valid file path string
+                                          | 
+                                          | Default value:
+                                          | Empty string
+                                          |-------------------------------------
             -m, --mode=[mode]             | Whether to encrypt or decrypt the
                                           | given files.
                                           | 
@@ -244,6 +260,7 @@ public class Arguments {
       Version,
       Input,
       Output,
+      Secrets,
       Mode,
       Algorithm,
    }
@@ -255,6 +272,7 @@ public class Arguments {
       put('v', Identifier.Version);
       put('i', Identifier.Input);
       put('o', Identifier.Output);
+      put('s', Identifier.Secrets);
       put('m', Identifier.Mode);
       put('a', Identifier.Algorithm);
    }};
@@ -266,6 +284,7 @@ public class Arguments {
       put("version",    Identifier.Version);
       put("input",      Identifier.Input);
       put("output",     Identifier.Output);
+      put("secrets",    Identifier.Secrets);
       put("mode",       Identifier.Mode);
       put("algorithm",  Identifier.Algorithm);
    }};
@@ -327,6 +346,18 @@ public class Arguments {
          }
       }
 
+      public static class Secrets implements Parser {
+         public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
+            if (parameter == null || parameter.length() == 0) {
+               consumer.secrets = null;
+               return;
+            }
+
+            consumer.secrets = parameter;
+            return;
+         }
+      }
+
       public static class Mode implements Parser {
          private static final java.util.HashMap<String, Arguments.Mode> MAP_MODE = new java.util.HashMap<String, Arguments.Mode>() {{
             put("encrypt", Arguments.Mode.Encrypt);
@@ -376,6 +407,7 @@ public class Arguments {
       put(Identifier.Version,    new Parser.Version());
       put(Identifier.Input,      new Parser.Input());
       put(Identifier.Output,     new Parser.Output());
+      put(Identifier.Secrets,    new Parser.Secrets());
       put(Identifier.Mode,       new Parser.Mode());
       put(Identifier.Algorithm,  new Parser.Algorithm());
    }};
