@@ -1,4 +1,18 @@
 public class Arguments {
+   String      input;      // input file path
+   String      output;     // output file path
+   Mode        mode;       // encryption mode (encrypt or decrypt)
+   Algorithm   algorithm;  // which algorithm to use for encryption
+   
+   public static enum Mode {
+      Encrypt,
+      Decrypt,
+   }
+
+   public static enum Algorithm {
+      Plaintext,
+   }
+
    // Collection of various different argument parsing exceptions.
    // These are all grouped under a single class as a thin wrapper to bundle
    // them all together as a generic parsing error.
@@ -89,12 +103,20 @@ public class Arguments {
    // Internal representation of the Arguments struct pre-finialization which
    // is used when parsing individual arguments.
    private static class ArgumentConsumer {
-      public boolean help;
-      public boolean version;
+      public boolean    help;
+      public boolean    version;
+      public String     input;
+      public String     output;
+      public Mode       mode;
+      public Algorithm  algorithm;
 
       public ArgumentConsumer() {
          this.help      = false;
          this.version   = false;
+         this.input     = null;
+         this.output    = null;
+         this.mode      = Mode.Encrypt;
+         this.algorithm = null;
          return;
       }
 
@@ -115,6 +137,23 @@ public class Arguments {
             System.exit(0);
          }
 
+         // This sucks...there's probably some meta-programming thing you can
+         // do, but for now we do it manually.  Note that not every field is
+         // required, thus not every field is checked.
+         if (this.input == null) {
+            throw new ParseException.MissingRequiredArgument("input");
+         }
+         if (this.output == null) {
+            throw new ParseException.MissingRequiredArgument("output");
+         }
+         if (this.algorithm == null) {
+            throw new ParseException.MissingRequiredArgument("algorithm");
+         }
+
+         args.input     = this.input;
+         args.output    = this.output;
+         args.mode      = this.mode;
+         args.algorithm = this.algorithm;
          return args;
       }
 
@@ -135,6 +174,10 @@ public class Arguments {
    private static enum Identifier {
       Help,
       Version,
+      Input,
+      Output,
+      Mode,
+      Algorithm,
    }
 
    // Short-form identifier map for parsing.  Edit this if you are adding a new
@@ -142,13 +185,21 @@ public class Arguments {
    private static final java.util.HashMap<Character, Identifier> MAP_IDENTIFIER_SHORT = new java.util.HashMap<Character, Identifier>() {{
       put('h', Identifier.Help);
       put('v', Identifier.Version);
+      put('i', Identifier.Input);
+      put('o', Identifier.Output);
+      put('m', Identifier.Mode);
+      put('a', Identifier.Algorithm);
    }};
 
    // Long-form identifier map for parsing. Edit this if you are adding a new
    // argument and it should have a long-form identifier.
    private static final java.util.HashMap<String, Identifier> MAP_IDENTIFIER_LONG = new java.util.HashMap<String, Identifier>() {{
-      put("help",    Identifier.Help);
-      put("version", Identifier.Version);
+      put("help",       Identifier.Help);
+      put("version",    Identifier.Version);
+      put("input",      Identifier.Input);
+      put("output",     Identifier.Output);
+      put("mode",       Identifier.Mode);
+      put("algorithm",  Identifier.Algorithm);
    }};
 
    // Instead of simply mapping function pointers, we have to use polymorphism
@@ -171,6 +222,7 @@ public class Arguments {
             }
 
             consumer.help = true;
+            return;
          }
       }
 
@@ -181,6 +233,70 @@ public class Arguments {
             }
 
             consumer.version = true;
+            return;
+         }
+      }
+
+      public static class Input implements Parser {
+         public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
+            if (parameter == null) {
+               throw new ParseException.ExpectedParameter(identifier);
+            }
+
+            consumer.input = parameter;
+            return;
+         }
+      }
+
+      public static class Output implements Parser {
+         public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
+            if (parameter == null) {
+               throw new ParseException.ExpectedParameter(identifier);
+            }
+
+            consumer.output = parameter;
+            return;
+         }
+      }
+
+      public static class Mode implements Parser {
+         private static final java.util.HashMap<String, Arguments.Mode> MAP_MODE = new java.util.HashMap<String, Arguments.Mode>() {{
+            put("encrypt", Arguments.Mode.Encrypt);
+            put("decrypt", Arguments.Mode.Decrypt);
+         }};
+
+         public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
+            if (parameter == null) {
+               throw new ParseException.ExpectedParameter(identifier);
+            }
+
+            Arguments.Mode mode = MAP_MODE.get(parameter);
+            if (mode == null) {
+               throw new ParseException.InvalidParameter(identifier, parameter);
+            }
+
+            consumer.mode = mode;
+            return;
+         }
+      }
+
+      public static class Algorithm implements Parser {
+         private static final java.util.HashMap<String, Arguments.Algorithm> MAP_ALGORITHM = new java.util.HashMap<String, Arguments.Algorithm>() {{
+            put("plaintext", Arguments.Algorithm.Plaintext);
+         }};
+
+         public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
+            if (parameter == null) {
+               throw new ParseException.ExpectedParameter(identifier);
+            }
+
+            Arguments.Algorithm algorithm = MAP_ALGORITHM.get(parameter);
+            if (algorithm == null) {
+               throw new ParseException.InvalidParameter(identifier, parameter);
+            }
+
+            consumer.algorithm = algorithm;
+            return;
          }
       }
    }
@@ -188,8 +304,12 @@ public class Arguments {
    // Finally...we can define our map for parsers.  Every single argument should
    // have a parser defined.
    private static final java.util.HashMap<Identifier, Parser> MAP_PARSER = new java.util.HashMap<Identifier, Parser>() {{
-      put(Identifier.Help,    new Parser.Help());
-      put(Identifier.Version, new Parser.Version());
+      put(Identifier.Help,       new Parser.Help());
+      put(Identifier.Version,    new Parser.Version());
+      put(Identifier.Input,      new Parser.Input());
+      put(Identifier.Output,     new Parser.Output());
+      put(Identifier.Mode,       new Parser.Mode());
+      put(Identifier.Algorithm,  new Parser.Algorithm());
    }};
 
    // --------------------------------------------------------------------------
