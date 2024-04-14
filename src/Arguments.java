@@ -221,7 +221,7 @@ public class Arguments {
                                           | plaintext
                                           | 
                                           | Default value:
-                                          | none (required value)
+                                          | none (required argument)
          
          ENCRYPTION ALGORITHMS:
             plaintext   | File data is left unencrypted and is untouched.  This
