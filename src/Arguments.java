@@ -158,14 +158,82 @@ public class Arguments {
       }
 
       private static void displayHelpMenu() {
-         // TODO: Implement
-         System.out.println("Help menu!");
+         // Unfortunately this has to be manually maintained.
+         System.out.println("""
+         -------------------------- EnCrypt Help Menu --------------------------
+         ARGUMENT SYNTAX:
+            Arguments can be formatted in the following ways:
+
+            --[long-form identifier]=[parameter]
+            --[long-form identifier]
+            -[short-form identifier]=[parameter]
+            -[short-form identifier]
+
+            The two types of identifier, \'long-form\' and \'short-form\', are
+            used to specify an argument type.  Long-form identifiers are usually
+            full words, while short-form identifiers are a single character.
+            For commands which support both forms of identification, there is no
+            difference in execution.
+
+            Some arguments may take a parameter.  This parameter is specified
+            with the \'=[parameter]\' part of the argument.  If an argument does
+            not expect a parameter, trying to pass one, even an empty one, will
+            lead to an error.
+
+         ARGUMENTS:
+            -h, --help                    | Displays the help menu.
+                                          |-------------------------------------
+            -v, --version                 | Displays the program version.
+                                          |-------------------------------------
+            -i, --input=[file path]       | Specifies the input file path to be
+                                          | used with the program.
+                                          |
+                                          | Valid values:
+                                          | Any valid file path string
+                                          | 
+                                          | Default value:
+                                          | None (required argument)
+                                          |-------------------------------------
+            -o, --output=[file path]      | Specifies the output file path which
+                                          | will result from the program.
+                                          |
+                                          | Valid values:
+                                          | Any valid file path string
+                                          | 
+                                          | Default value:
+                                          | None (required argument)
+                                          |-------------------------------------
+            -m, --mode=[mode]             | Whether to encrypt or decrypt the
+                                          | given files.
+                                          | 
+                                          | Valid values:
+                                          | encrypt
+                                          | decrypt
+                                          | 
+                                          | Default value:
+                                          | encrypt
+                                          |-------------------------------------
+            -a, --algorithm=[algorithm]   | Which encryption/decryption
+                                          | algorithm to use with the given
+                                          | files.
+                                          | 
+                                          | Valid values:
+                                          | plaintext
+                                          | 
+                                          | Default value:
+                                          | none (required value)
+         
+         ENCRYPTION ALGORITHMS:
+            plaintext   | File data is left unencrypted and is untouched.  This
+                        | is effectively the same as copying the file.  This is
+                        | only recommended for testing and debugging.
+
+         -----------------------------------------------------------------------""");
          return;
       }
 
       private static void displayVersionText() {
-         // TODO: Implement
-         System.out.println("Version text!");
+         System.out.println("EnCrypt version 1.0.0");
          return;
       }
    }
