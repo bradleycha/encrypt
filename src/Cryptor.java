@@ -11,6 +11,7 @@ public interface Cryptor {
    public static enum Algorithm {
       Plaintext,
       ConstantOffset,
+      AES256,
    }
 
    public static class Plaintext implements Cryptor {
@@ -72,6 +73,16 @@ public interface Cryptor {
          }
 
          return offset;
+      }
+   }
+   public static class AES256 implements Cryptor {
+      public void encrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
+         
+         return;
+      }
+      public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
+         
+         return;
       }
    }
 }
