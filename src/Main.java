@@ -4,6 +4,36 @@ public class Main {
 
       String secrets = readSecrets(args);
 
+      // We use buffered file streams so massive files don't have to be loaded
+      // into memory all at once, which also avoids reading over the whole file
+      // twice, once for the memory copy and another to run the algorithm.
+      java.io.BufferedInputStream input = new java.io.BufferedInputStream(new java.io.FileInputStream(args.input));
+      java.io.BufferedOutputStream output = new java.io.BufferedOutputStream(new java.io.FileOutputStream(args.output));
+
+      switch (args.mode) {
+      case Encrypt:
+         encryptData(input, output, secrets, args.algorithm);
+         break;
+
+      case Decrypt:
+         decryptData(input, output, secrets, args.algorithm);
+         break;
+      }
+
+      return;
+   }
+
+   // Runs a specified encryption algorithm using the given secrets, reading
+   // from 'input' and writing to 'output'.
+   private static void encryptData(java.io.InputStream input, java.io.OutputStream output, String secrets, Arguments.Algorithm algorithm) {
+      // TODO: Implement
+      return;
+   }
+
+   // Runs a specified decryption algorithm using the given secrets, reading
+   // from 'input' and writing to 'output'.
+   private static void decryptData(java.io.InputStream input, java.io.OutputStream output, String secrets, Arguments.Algorithm algorithm) {
+      // TODO: Implement
       return;
    }
 
