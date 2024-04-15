@@ -87,6 +87,7 @@ public class Main {
    private static final java.util.HashMap<Cryptor.Algorithm, Cryptor> MAP_CRYPTOR = new java.util.HashMap<Cryptor.Algorithm, Cryptor>() {{
       put(Cryptor.Algorithm.Plaintext,       new Cryptor.Plaintext());
       put(Cryptor.Algorithm.ConstantOffset,  new Cryptor.ConstantOffset());
+      put(Cryptor.Algorithm.AES256, new Cryptor.AES256());
    }};
 
    private static Cryptor chooseCryptor(Cryptor.Algorithm algorithm) {
