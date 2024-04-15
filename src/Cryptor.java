@@ -27,13 +27,29 @@ public interface Cryptor {
 
    public static class ConstantOffset implements Cryptor {
       public void encrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
+         byte offset = deriveOffset(secrets);
+
          // TODO: Implement
          return;
       }
 
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
+         byte offset = deriveOffset(secrets);
+
          // TODO: Implement
          return;
+      }
+
+      private static byte deriveOffset(byte [] secrets) {
+         final byte START_OFFSET = 0x42;
+
+         byte offset = START_OFFSET;
+         for (byte b : secrets) {
+            // This intentionally overflows.
+            offset += b;
+         }
+
+         return offset;
       }
    }
 }
