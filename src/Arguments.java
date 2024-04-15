@@ -1,17 +1,13 @@
 public class Arguments {
-   public String     input;      // input file path
-   public String     output;     // output file path
-   public String     secrets;    // secreits file path or 'null' for password prompt
-   public Mode       mode;       // encryption mode (encrypt or decrypt)
-   public Algorithm  algorithm;  // which algorithm to use for encryption
+   public String              input;      // input file path
+   public String              output;     // output file path
+   public String              secrets;    // secreits file path or 'null' for password prompt
+   public Mode                mode;       // encryption mode (encrypt or decrypt)
+   public Cryptor.Algorithm   algorithm;  // which algorithm to use for encryption
    
    public static enum Mode {
       Encrypt,
       Decrypt,
-   }
-
-   public static enum Algorithm {
-      Plaintext,
    }
 
    // Collection of various different argument parsing exceptions.
@@ -104,13 +100,13 @@ public class Arguments {
    // Internal representation of the Arguments struct pre-finialization which
    // is used when parsing individual arguments.
    private static class ArgumentConsumer {
-      public boolean    help;
-      public boolean    version;
-      public String     input;
-      public String     output;
-      public String     secrets;
-      public Mode       mode;
-      public Algorithm  algorithm;
+      public boolean             help;
+      public boolean             version;
+      public String              input;
+      public String              output;
+      public String              secrets;
+      public Mode                mode;
+      public Cryptor.Algorithm   algorithm;
 
       public ArgumentConsumer() {
          this.help      = false;
@@ -380,8 +376,8 @@ public class Arguments {
       }
 
       public static class Algorithm implements Parser {
-         private static final java.util.HashMap<String, Arguments.Algorithm> MAP_ALGORITHM = new java.util.HashMap<String, Arguments.Algorithm>() {{
-            put("plaintext", Arguments.Algorithm.Plaintext);
+         private static final java.util.HashMap<String, Cryptor.Algorithm> MAP_ALGORITHM = new java.util.HashMap<String, Cryptor.Algorithm>() {{
+            put("plaintext", Cryptor.Algorithm.Plaintext);
          }};
 
          public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
@@ -389,7 +385,7 @@ public class Arguments {
                throw new ParseException.ExpectedParameter(identifier);
             }
 
-            Arguments.Algorithm algorithm = MAP_ALGORITHM.get(parameter);
+            Cryptor.Algorithm algorithm = MAP_ALGORITHM.get(parameter);
             if (algorithm == null) {
                throw new ParseException.InvalidParameter(identifier, parameter);
             }

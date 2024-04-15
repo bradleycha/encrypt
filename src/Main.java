@@ -12,13 +12,15 @@ public class Main {
       java.io.BufferedInputStream input = new java.io.BufferedInputStream(new java.io.FileInputStream(args.input));
       java.io.BufferedOutputStream output = new java.io.BufferedOutputStream(new java.io.FileOutputStream(args.output));
 
+      Cryptor cryptor = chooseCryptor(args.algorithm);
+
       switch (args.mode) {
       case Encrypt:
-         encryptData(input, output, secrets, args.algorithm);
+         cryptor.encrypt(input, output, secrets);
          break;
 
       case Decrypt:
-         decryptData(input, output, secrets, args.algorithm);
+         cryptor.decrypt(input, output, secrets);
          break;
       }
 
@@ -74,6 +76,14 @@ public class Main {
       return bytes;
    }
 
+   private static final java.util.HashMap<Cryptor.Algorithm, Cryptor> MAP_CRYPTOR = new java.util.HashMap<Cryptor.Algorithm, Cryptor>() {{
+      put(Cryptor.Algorithm.Plaintext, new Cryptor.Plaintext());
+   }};
+
+   private static Cryptor chooseCryptor(Cryptor.Algorithm algorithm) {
+      return MAP_CRYPTOR.get(algorithm);
+   }
+
    private static byte [] deriveSecrets(String password) {
       // This will use standard salting + hashing, which works in the following
       // way:
@@ -91,20 +101,6 @@ public class Main {
 
       // TODO: Implement
       return new byte [0];
-   }
-
-   // Runs a specified encryption algorithm using the given secrets, reading
-   // from 'input' and writing to 'output'.
-   private static void encryptData(java.io.InputStream input, java.io.OutputStream output, byte [] secrets, Arguments.Algorithm algorithm) {
-      // TODO: Implement
-      return;
-   }
-
-   // Runs a specified decryption algorithm using the given secrets, reading
-   // from 'input' and writing to 'output'.
-   private static void decryptData(java.io.InputStream input, java.io.OutputStream output, byte [] secrets, Arguments.Algorithm algorithm) {
-      // TODO: Implement
-      return;
    }
 }
 
