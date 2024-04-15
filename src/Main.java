@@ -117,8 +117,9 @@ public class Main {
 
       String password_salted = password + PASSWORD_SALT;
 
-      // TODO: Implement hashing function
-      return password_salted.getBytes();
+      byte [] password_salted_bytes = password_salted.getBytes();
+
+      return Sha512.hash(password_salted_bytes);
    }
 }
 
