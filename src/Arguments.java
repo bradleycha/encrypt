@@ -231,14 +231,20 @@ public class Arguments {
                                           | 
                                           | Valid values:
                                           | plaintext
+                                          | constant-offset
                                           | 
                                           | Default value:
                                           | none (required argument)
          
          ENCRYPTION ALGORITHMS:
-            plaintext   | File data is left unencrypted and is untouched.  This
-                        | is effectively the same as copying the file.  This is
-                        | only recommended for testing and debugging.
+            plaintext         | File data is left unencrypted and is untouched. 
+                              | This is effectively the same as copying the
+                              | file.  This is only recommended for testing and
+                              | debugging purposes.
+                              |-------------------------------------------------
+            constant-offset   | A constant value will be derived from the input
+                              | secrets and will be added to every byte in the
+                              | input data.
 
          -----------------------------------------------------------------------""");
          return;
@@ -377,7 +383,8 @@ public class Arguments {
 
       public static class Algorithm implements Parser {
          private static final java.util.HashMap<String, Cryptor.Algorithm> MAP_ALGORITHM = new java.util.HashMap<String, Cryptor.Algorithm>() {{
-            put("plaintext", Cryptor.Algorithm.Plaintext);
+            put("plaintext",        Cryptor.Algorithm.Plaintext);
+            put("constant-offset",  Cryptor.Algorithm.ConstantOffset);
          }};
 
          public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
