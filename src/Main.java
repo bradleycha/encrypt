@@ -2,7 +2,9 @@ public class Main {
    public static void main(String [] args_cmd) throws java.lang.Exception {
       Arguments args = Arguments.parse(args_cmd);
 
-      String secrets = readSecrets(args);
+      String password = readPassword(args);
+
+      byte [] secrets = deriveSecrets(password);
 
       // We use buffered file streams so massive files don't have to be loaded
       // into memory all at once, which also avoids reading over the whole file
@@ -23,32 +25,18 @@ public class Main {
       return;
    }
 
-   // Runs a specified encryption algorithm using the given secrets, reading
-   // from 'input' and writing to 'output'.
-   private static void encryptData(java.io.InputStream input, java.io.OutputStream output, String secrets, Arguments.Algorithm algorithm) {
-      // TODO: Implement
-      return;
-   }
-
-   // Runs a specified decryption algorithm using the given secrets, reading
-   // from 'input' and writing to 'output'.
-   private static void decryptData(java.io.InputStream input, java.io.OutputStream output, String secrets, Arguments.Algorithm algorithm) {
-      // TODO: Implement
-      return;
-   }
-
-   // Attempts to read secrets (password) from the source specified in arguments.
-   private static String readSecrets(Arguments args) throws java.lang.Exception {
+   // Attempts to read plaintext password from the source specified in arguments.
+   private static String readPassword(Arguments args) throws java.lang.Exception {
       String file_path = args.secrets;
       if (file_path == null) {
-         return readSecretsPrompt();
+         return readPasswordPrompt();
       }
 
-      return readSecretsFile(file_path);
+      return readPasswordFile(file_path);
    }
 
-   // Reads secrets from the user using a password prompt.
-   private static String readSecretsPrompt() throws ConsoleUnavailableException {
+   // Reads password from the user using a terminal prompt.
+   private static String readPasswordPrompt() throws ConsoleUnavailableException {
       java.io.Console console = System.console();
       if (console == null) {
          throw new ConsoleUnavailableException("console unavailable");
@@ -59,8 +47,8 @@ public class Main {
       return new String(data);
    }
 
-   // Reads secrets from a user-specified file path.
-   private static String readSecretsFile(String path) throws java.lang.Exception {
+   // Reads password from a user-specified file path.
+   private static String readPasswordFile(String path) throws java.lang.Exception {
       byte [] bytes = readFileBytes(path);
 
       return new String(bytes);
@@ -84,6 +72,39 @@ public class Main {
       byte [] bytes = stream_output.toByteArray();
 
       return bytes;
+   }
+
+   private static byte [] deriveSecrets(String password) {
+      // This will use standard salting + hashing, which works in the following
+      // way:
+      //
+      // 1. We append some constant string value to the password, which is
+      // called 'salting'.  This protects the password from 'rainbow tables',
+      // which are essentially pre-computer brute-force attacks.
+      //
+      // 2. We run a hashing algorithm to convert the password into a list of
+      // bytes which protects encrypted data from sharing similar keys with
+      // similar passwords, if that makes sense.
+      //
+      // The output byte data will be used as the key, or as we call it, secrets
+      // used to encrypt/decrypt data.
+
+      // TODO: Implement
+      return new byte [0];
+   }
+
+   // Runs a specified encryption algorithm using the given secrets, reading
+   // from 'input' and writing to 'output'.
+   private static void encryptData(java.io.InputStream input, java.io.OutputStream output, byte [] secrets, Arguments.Algorithm algorithm) {
+      // TODO: Implement
+      return;
+   }
+
+   // Runs a specified decryption algorithm using the given secrets, reading
+   // from 'input' and writing to 'output'.
+   private static void decryptData(java.io.InputStream input, java.io.OutputStream output, byte [] secrets, Arguments.Algorithm algorithm) {
+      // TODO: Implement
+      return;
    }
 }
 
