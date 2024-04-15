@@ -2,15 +2,15 @@ public class Main {
    public static void main(String [] args_cmd) throws java.lang.Exception {
       Arguments args = Arguments.parse(args_cmd);
 
-      String password = readPassword(args);
-
-      byte [] secrets = deriveSecrets(password);
-
       // We use buffered file streams so massive files don't have to be loaded
       // into memory all at once, which also avoids reading over the whole file
       // twice, once for the memory copy and another to run the algorithm.
       java.io.BufferedInputStream input = new java.io.BufferedInputStream(new java.io.FileInputStream(args.input));
       java.io.BufferedOutputStream output = new java.io.BufferedOutputStream(new java.io.FileOutputStream(args.output));
+
+      String password = readPassword(args);
+
+      byte [] secrets = deriveSecrets(password);
 
       Cryptor cryptor = chooseCryptor(args.algorithm);
 
