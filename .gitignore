@@ -1,2 +1,14 @@
 bin
 
+haha.txt
+hehe.txt
+hoho.txt
+decryptedtext.txt
+encryptedtext.txt
+plaintext.txt
+secret.txt
+src/Cryptor.class
+src/Cryptor$Algorithm.class
+.gitignore
+src/Cryptor$ConstantOffset.class
+src/Cryptor$Plaintext.class

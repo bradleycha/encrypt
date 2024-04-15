@@ -28,15 +28,19 @@ public interface Cryptor {
    public static class ConstantOffset implements Cryptor {
       public void encrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
          byte offset = deriveOffset(secrets);
-
-         // TODO: Implement
+         int content = input.read();
+         while(content!=-1){
+            output.write(content+offset);
+            content = input.read();
+         }
+         input.close();
+         output.close();
          return;
       }
 
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
          byte offset = deriveOffset(secrets);
-
-         // TODO: Implement
+         //TODO: Implement
          return;
       }
 
