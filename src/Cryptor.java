@@ -15,12 +15,24 @@ public interface Cryptor {
 
    public static class Plaintext implements Cryptor {
       public void encrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
-         // TODO: Implement
+         int content = input.read();
+         while(content!=-1){
+            output.write(content);
+            content = input.read();
+         }
+         input.close();
+         output.close();
          return;
       }
 
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception {
-         // TODO: Implement
+         int content = input.read();
+         while(content!=-1){
+            output.write(content);
+            content = input.read();
+         }
+         input.close();
+         output.close();
          return;
       }
    }
