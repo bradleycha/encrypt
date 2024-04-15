@@ -99,9 +99,18 @@ public class Main {
       //
       // The output byte data will be used as the key, or as we call it, secrets
       // used to encrypt/decrypt data.
+      //
+      // Also worth noting that this function must have the same output for
+      // each unique input across versions.  Basically, once implemented, the
+      // output can never change, otherwise it will invalidate encryption keys
+      // for older files, thus making them impossible to decrypt.
 
-      // TODO: Implement
-      return new byte [0];
+      final String PASSWORD_SALT = "### ENCRYPT 2024 ###";
+
+      String password_salted = password + PASSWORD_SALT;
+
+      // TODO: Implement hashing function
+      return password_salted.getBytes();
    }
 }
 
