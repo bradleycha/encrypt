@@ -14,6 +14,14 @@ public class Main {
 
       Cryptor cryptor = chooseCryptor(args.algorithm);
 
+      // TODO: File hashing.  When encrypting, calculate the file hash and
+      // store it along with the hash length at the start of the encrypted data.
+      // When decrypting, attempt to read the file hash and compare against the
+      // final decrypted data.  This provides protection in the case of file
+      // corruption, or more likely, different encryption algorithms being used
+      // to encrypt and decrypt or an invalid password.  Otherwise, the file
+      // decrypted file data will be nonsense.
+
       switch (args.mode) {
       case Encrypt:
          cryptor.encrypt(input, output, secrets);
