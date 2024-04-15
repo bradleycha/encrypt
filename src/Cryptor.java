@@ -146,11 +146,53 @@ public interface Cryptor {
             }
             System.out.println("");
          }
-         input.read(matrix[0]);
+         for(int i = 0; i<4; i++){
+            input.read(matrix[i]);
+         }
+         //Initial AddRoundKey
+         for(int i = 0; i<4; i++){
+            for(int j = 0; j<4; j++){
+               matrix[i][j] ^= expanded_key[i][j];
+            }
+         }
+         //13 rounds
+         for(int i = 0; i<13;i++){
+            //SubBytes
+            for(int j = 0; j<4;j++){
+               for(int k = 0; k<4; k++){
+                  matrix[j][k] = (byte)(matrix[j][k] ^ matrix[j][(k+4)%8] ^ matrix[j][(k+5)%8] ^ matrix[j][(k+6)%8] ^ matrix[j][(k+7)%8] ^ 01100011);
+               }
+            }
+            //ShiftRows
+            
+            //MixColumns
+
+            //AddRoundKey
+            for(int j = 0; j<4; j++){
+               for(int k = 0; k<4; k++){
+                matrix[j][k] ^= expanded_key[j][k];
+               }
+            }
+         }
+         ///final round(14)
+         //SubBytes
+         for(int j = 0; j<4;j++){
+            for(int k = 0; k<4; k++){
+               matrix[j][k] = (byte)(matrix[j][k] ^ matrix[j][(k+4)%8] ^ matrix[j][(k+5)%8] ^ matrix[j][(k+6)%8] ^ matrix[j][(k+7)%8] ^ 01100011);
+            }
+         }
+         //ShiftRows
+
+         //AddRoundKey
+         for(int i = 0; i<4; i++){
+            for(int j = 0; j<4; j++){
+               matrix[i][j] ^= expanded_key[i][j];
+            }
+         }
          return;
       }
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
-         
+         //TODO: Implement
          return;
       }
       private static byte[] RotateWord(byte[] word){
@@ -163,7 +205,7 @@ public interface Cryptor {
       }
       private static byte[] SubWord(byte[] word){
          byte[] new_word = new byte[4];
-         for(int i = 0; i<8; i++){
+         for(int i = 0; i<4; i++){
             new_word[i] = (byte)(word[i] ^ word[(i+4)%8] ^ word[(i+5)%8] ^ word[(i+6)%8] ^ word[(i+7)%8] ^ 01100011);
          }
          return new_word;
