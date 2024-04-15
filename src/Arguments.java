@@ -232,6 +232,7 @@ public class Arguments {
                                           | Valid values:
                                           | plaintext
                                           | constant-offset
+                                          | aes256
                                           | 
                                           | Default value:
                                           | none (required argument)
@@ -245,6 +246,10 @@ public class Arguments {
             constant-offset   | A constant value will be derived from the input
                               | secrets and will be added to every byte in the
                               | input data.
+                              |-------------------------------------------------
+            aes256            | Implementation of AES 256, which is the most
+                              | secure algorithm and is recommended for any
+                              | serious encryption.
 
          -----------------------------------------------------------------------""");
          return;
@@ -385,7 +390,7 @@ public class Arguments {
          private static final java.util.HashMap<String, Cryptor.Algorithm> MAP_ALGORITHM = new java.util.HashMap<String, Cryptor.Algorithm>() {{
             put("plaintext",        Cryptor.Algorithm.Plaintext);
             put("constant-offset",  Cryptor.Algorithm.ConstantOffset);
-            put("aes256", Cryptor.Algorithm.AES256);
+            put("aes256",           Cryptor.Algorithm.AES256);
          }};
 
          public void parse(ArgumentConsumer consumer, String identifier, String parameter) throws ParseException {
