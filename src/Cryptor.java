@@ -21,8 +21,7 @@ public interface Cryptor {
             output.write(content);
             content = input.read();
          }
-         input.close();
-         output.close();
+         
          return;
       }
 
@@ -32,8 +31,7 @@ public interface Cryptor {
             output.write(content);
             content = input.read();
          }
-         input.close();
-         output.close();
+         
          return;
       }
    }
@@ -46,8 +44,7 @@ public interface Cryptor {
             output.write(content+offset);
             content = input.read();
          }
-         input.close();
-         output.close();
+         
          return;
       }
 
@@ -58,8 +55,7 @@ public interface Cryptor {
             output.write(content-offset);
             content = input.read();
          }
-         input.close();
-         output.close();
+
          return;
       }
 
