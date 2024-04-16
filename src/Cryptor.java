@@ -1,3 +1,4 @@
+import java.util.Base64;
 public interface Cryptor {
    // Encrypts the data read from 'input', writing to 'output', deriving the
    // encryption key from 'secrets'.
@@ -74,133 +75,105 @@ public interface Cryptor {
           better bit manipulation
           functionize everything
           */
-         byte[] initial_key = new byte[32];
+         int bytesRead = 0;
+         byte[][] stateMatrix = new byte[4][4]; //I'm imagining it as columns x rows
+         //byte[] initialKey = new byte[32]; //32 byte (256 bit) key
+         
+         
+         //The Key Schedule (Generating expandedKeys)
+         int N = 8; //length of the key in 32-bit (4-byte) words
+         byte[][] K = new byte[N][4]; //32-bit word index x byte index (32 words with 4 bytes each)
+         int R = 15; //number of rounds needed, 15 for 256
+         byte[][] W = new byte[4*R][4]; //W: rounds x keys, each key is a 4x4x8 bit block (128bit)
          byte[][] rcon = new byte[8][4];
-         for(int i = 0; i<32; i++){
-            initial_key[i] = secrets[i];
+         byte[] rc = new byte[8];
+         //Round Constant Generation(rcon[1] to rcon[7] for 256)
+         for(int i = 1; i<8;i++){
+            if(i==1){
+               rc[i] = 1;
+            }
+            else if(i>1 && rc[i-1]<128){
+               rc[i] = (byte)(rc[i-1] << 1);
+            }
+            else if(i>1 && rc[i-1]>=128){
+               rc[i] = (byte)((rc[i-1] << 1) ^ 283);
+            }
+            rcon[i][0] = rc[i];
+            for(int j = 1; j<=3; j++){
+               rcon[i][j] = 0;
+            }
          }
-         byte[][] matrix = new byte[4][4];
-         byte[][] expanded_key = new byte[60][4];
-         int bytesRead = 1;
-         while(bytesRead>0){
-            for(int i = 0; i<4; i++){
-               bytesRead = input.read(matrix[i]);
+         //Expanded Key Word Generation
+         for(int i = 0; i<4*R; i++){
+            if(i<N){
+               W[i] = K[i];
             }
-         for(int i=0; i<8; i++){
-            if(i==0){
-               rcon[i][0] = 1;
+            else if(i>=N && i%N==0){
+               W[i] = wordXOR(wordXOR(W[i-N], SubWord(RotateWord(W[i-1]))), rcon[i/N]);
             }
-            else if(i>0 && rcon[i-1][0]<128){
-               rcon[i][0] = (byte)(rcon[i-1][0] * 2);
-            }
-            else if(i>0 && rcon[i-1][0]>=128){
-               rcon[i][0] = (byte)((rcon[i-1][0] * 2) ^ (283));
-            }
-            rcon[i][1] = 0;
-            rcon[i][2] = 0;
-            rcon[i][3] = 0;
-         }
-
-         for(int i = 0; i<60; i++){
-            //W_i calculation
-            if(i<8){
-               expanded_key[i][0] = initial_key[i];
-               expanded_key[i][1] = initial_key[i+1];
-               expanded_key[i][2] = initial_key[i+2];
-               expanded_key[i][3] = initial_key[i+3];
-            }
-            else if(i>=8 && (i%8)==0){
-               for(int j = 0; j<4; j++){
-                  expanded_key[i][j] = (byte)(expanded_key[i-8][j] ^ SubWord(RotateWord(expanded_key[i-1]))[j] ^ rcon[i/8][0]);
-               }
-            }
-            else if(i>=8 && (i%8)==4){
-               for(int j = 0; j<4; j++){
-                  expanded_key[i][j] = (byte)(expanded_key[i-8][j] ^ SubWord(expanded_key[i-1])[j]);
-               }
+            else if(i>=N && i%N==4){
+               W[i] = wordXOR(W[i-N], SubWord(W[i-1]));
             }
             else{
-               for(int j = 0; j<4; j++){
-                  expanded_key[i][j] = (byte)(expanded_key[i-8][j] ^ expanded_key[i-1][j]);
-               }
+               W[i] = wordXOR(W[i-N], W[i-1]);
             }
          }
+         //read & encrypt
+         while(bytesRead != -1){
+            //Read 1 block to the state matrix (read 4 words columnwise)
+            for(int c = 0; c<4; c++){
+               bytesRead = input.read(stateMatrix[c]);
+            }
+            //Now we have a full 4x4x8 bit block, 128 bits total
 
-         for(int i = 0; i<4; i++){
-            if(bytesRead<4){
-               matrix[i][3] = 0;
-            }
-            if(bytesRead<3){
-               matrix[i][2] = 0;
-            }
-            if(bytesRead<2){
-               matrix[i][1] = 0;
-            }
-            if(bytesRead<1){
-               matrix[i][0] = 0;
-            }
-         }
-         for(int i = 0; i<4; i++){
-            input.read(matrix[i]);
-         }
-         //Initial AddRoundKey
-         for(int i = 0; i<4; i++){
-            for(int j = 0; j<4; j++){
-               matrix[i][j] ^= expanded_key[i][j];
-            }
-         }
-         //13 rounds
-         for(int i = 0; i<13;i++){
-            //SubBytes
-            for(int j = 0; j<4;j++){
-               matrix[j] = SubWord(matrix[j]);
-            }
-            //ShiftRows
-            RotateWord(matrix[1]);
-            RotateWord(RotateWord(matrix[2]));
-            RotateWord(RotateWord(RotateWord(matrix[3])));
-            //MixColumns
-            byte[][] matrix_constant = {{2,3,1,1}, {1,2,3,1}, {1,1,2,3}, {3,1,1,2}};
-            byte[][] new_matrix = new byte[4][4];
-            for(int j = 0; j<4; j++){
-               for(int k = 0; k<4; k++){
-                  for(int l = 0; l<4; l++){
-                     new_matrix[j][k] ^= (byte)(matrix_constant[k][l] * matrix[j][k]);
+            //Traverse 14 rounds, r
+            for(int r = 0; r<=14; r++){
+               if(r>0){
+                  //SubBytes
+                  for(int c = 0; c<4; c++){
+                     for(int i = 0; i<4; i++){
+                        stateMatrix[c][i] = sBox(stateMatrix[c][i]);
+                     }
+                  }
+                  //ShiftRows left circular byte shift each row incrementally
+                  for(int i=1; i<4; i++){
+                     for(int j=0; j<i; j++){
+                        byte tempByte = stateMatrix[0][i];
+                        stateMatrix[0][i] = stateMatrix[1][i];
+                        stateMatrix[1][i] = stateMatrix[2][i];
+                        stateMatrix[2][i] = stateMatrix[3][i];
+                        stateMatrix[3][i] = tempByte;
+                     }
+                  }
+               }
+               if(r>0 && r<14){
+                  //MixColumns
+                  byte[][] matrix_constant = {{2,1,1,3}, {3,2,1,1}, {1,3,2,1}, {1,1,3,2}};
+                  byte[][] new_matrix = new byte[4][4];
+                  for(int j = 0; j<4; j++){
+                     for(int k = 0; k<4; k++){
+                        for(int l = 0; l<4; l++){
+                           new_matrix[j][k] ^= (byte)(matrix_constant[k][l] * stateMatrix[j][k]);
+                        }
+                     }
+                  }
+               }
+               //AddRoundKey
+               for(int c = 0; c<4; c++){
+                  for(int i = 0; i<4; i++){
+                     stateMatrix[c][i] = (byte)(stateMatrix[c][i] ^ W[4*r+c][i]);
                   }
                }
             }
-            //AddRoundKey
-            for(int j = 0; j<4; j++){
-               for(int k = 0; k<4; k++){
-                matrix[j][k] ^= expanded_key[j][k];
-               }
+            //System.out.println("Data Block");
+            for(byte[] column: stateMatrix){
+               
+               output.write(Base64.getEncoder().encode(column));
+               //System.out.println();
             }
          }
-         ///final round(14)
-         //SubBytes
-         for(int j = 0; j<4;j++){
-            matrix[j] = SubWord(matrix[j]);
-         }
-         //ShiftRows
-         RotateWord(matrix[1]);
-         RotateWord(RotateWord(matrix[2]));
-         RotateWord(RotateWord(RotateWord(matrix[3])));
-         //AddRoundKey
-         for(int i = 0; i<4; i++){
-            for(int j = 0; j<4; j++){
-               matrix[i][j] ^= expanded_key[i][j];
-            }
-         }
-         for(int i = 0; i<4; i++){
-            output.write(matrix[i]);
-            for(int j = 0; j<4; j++){
-               System.out.print(matrix[i][j]+",");
-            }
-            System.out.println();
-         }
-      }
-         output.close();
          input.close();
+         output.close();
          return;
       }
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
@@ -216,12 +189,27 @@ public interface Cryptor {
          return new_word;
       }
       private static byte[] SubWord(byte[] word){
-         byte[] new_word = new byte[4];
+         byte[] newWord = new byte[4];
          for(int i = 0; i<4; i++){
-            new_word[i] = (byte)(word[i] ^ Integer.rotateLeft(word[i],1) ^ Integer.rotateLeft(word[i],2) ^ Integer.rotateLeft(word[i],3) ^ Integer.rotateLeft(word[i],1) ^ 99);
+            byte b = word[i];
+            newWord[i] = sBox(b);
          }
-         return new_word;
+         return newWord;
+      }
+      private static byte sBox(byte b){
+         byte s = (byte)(b ^ leftCircularShift(b, 1) ^ leftCircularShift(b, 2) ^ leftCircularShift(b, 3) ^ leftCircularShift(b, 4) ^ 99);
+         return s;
+      }
+      private static byte leftCircularShift(byte b, int d){
+         byte newByte = (byte)((b << d) | (b >> Integer.SIZE-d));
+         return newByte;
+      }
+      private static byte[] wordXOR(byte[] w1, byte[] w2){
+         byte[] newWord = new byte[w1.length];
+         for(int i = 0; i<w1.length; i++){
+            newWord[i] = (byte)(w1[i] ^ w2[i]);
+         }
+         return newWord;
       }
    }
 }
-
