@@ -82,9 +82,13 @@ public interface Cryptor {
          for(int i = 0; i<32; i++){
             initial_key[i] = secrets[i];
          }
-         System.out.print("Initial Key: "+initial_key.toString()+"\n");
          byte[][] matrix = new byte[4][4];
          byte[][] expanded_key = new byte[60][4];
+         int bytesRead = 1;
+         while(bytesRead>0){
+            for(int i = 0; i<4; i++){
+               bytesRead = input.read(matrix[i]);
+            }
          for(int i=0; i<8; i++){
             if(i==0){
                rcon[i][0] = 1;
@@ -126,7 +130,6 @@ public interface Cryptor {
          }
 
          for(int i = 0; i<4; i++){
-            int bytesRead = input.read(matrix[i]);
             if(bytesRead<4){
                matrix[i][3] = 0;
             }
@@ -139,12 +142,6 @@ public interface Cryptor {
             if(bytesRead<1){
                matrix[i][0] = 0;
             }
-         }
-         for(byte[] column: matrix){
-            for(byte value: column){
-               System.out.print(value+",");
-            }
-            System.out.println("");
          }
          for(int i = 0; i<4; i++){
             input.read(matrix[i]);
@@ -197,6 +194,16 @@ public interface Cryptor {
                matrix[i][j] ^= expanded_key[i][j];
             }
          }
+         for(int i = 0; i<4; i++){
+            output.write(matrix[i]);
+            for(int j = 0; j<4; j++){
+               System.out.print(matrix[i][j]+",");
+            }
+            System.out.println();
+         }
+      }
+         output.close();
+         input.close();
          return;
       }
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
