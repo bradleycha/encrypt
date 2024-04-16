@@ -1,4 +1,5 @@
 import java.util.Base64;
+import java.io.ByteArrayOutputStream;
 public interface Cryptor {
    // Encrypts the data read from 'input', writing to 'output', deriving the
    // encryption key from 'secrets'.
@@ -79,10 +80,15 @@ public interface Cryptor {
          byte[][] stateMatrix = new byte[4][4]; //I'm imagining it as columns x rows
          //byte[] initialKey = new byte[32]; //32 byte (256 bit) key
          
-         
-         //The Key Schedule (Generating expandedKeys)
          int N = 8; //length of the key in 32-bit (4-byte) words
          byte[][] K = new byte[N][4]; //32-bit word index x byte index (32 words with 4 bytes each)
+         for(int i = 0; i<N; i++){
+            for(int j = 0; j<4;j++){
+               K[i][j] = secrets[4*i+j];
+            }
+         }
+         
+         //The Key Schedule (Generating expandedKeys)
          int R = 15; //number of rounds needed, 15 for 256
          byte[][] W = new byte[4*R][4]; //W: rounds x keys, each key is a 4x4x8 bit block (128bit)
          byte[][] rcon = new byte[8][4];
@@ -119,6 +125,7 @@ public interface Cryptor {
             }
          }
          //read & encrypt
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
          while(bytesRead != -1){
             //Read 1 block to the state matrix (read 4 words columnwise)
             for(int c = 0; c<4; c++){
@@ -165,19 +172,17 @@ public interface Cryptor {
                   }
                }
             }
-            //System.out.println("Data Block");
             for(byte[] column: stateMatrix){
-               
-               output.write(Base64.getEncoder().encode(column));
-               //System.out.println();
+               out.write(column);
             }
          }
-         input.close();
-         output.close();
+         output.write(Base64.getEncoder().encode(out.toByteArray()));
+
+         
          return;
       }
       public void decrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
-         //TODO: Implement
+         //TODO
          return;
       }
       private static byte[] RotateWord(byte[] word){
