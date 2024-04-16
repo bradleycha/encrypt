@@ -164,9 +164,19 @@ public interface Cryptor {
                }
             }
             //ShiftRows
-            
+            RotateWord(matrix[1]);
+            RotateWord(RotateWord(matrix[2]));
+            RotateWord(RotateWord(RotateWord(matrix[3])));
             //MixColumns
-
+            byte[][] matrix_constant = {{2,3,1,1}, {1,2,3,1}, {1,1,2,3}, {3,1,1,2}};
+            byte[][] new_matrix = new byte[4][4];
+            for(int j = 0; j<4; j++){
+               for(int k = 0; k<4; k++){
+                  for(int l = 0; l<4; l++){
+                     new_matrix[j][k] ^= (byte)(matrix_constant[k][l] * matrix[j][k]);
+                  }
+               }
+            }
             //AddRoundKey
             for(int j = 0; j<4; j++){
                for(int k = 0; k<4; k++){
@@ -182,7 +192,9 @@ public interface Cryptor {
             }
          }
          //ShiftRows
-
+         RotateWord(matrix[1]);
+         RotateWord(RotateWord(matrix[2]));
+         RotateWord(RotateWord(RotateWord(matrix[3])));
          //AddRoundKey
          for(int i = 0; i<4; i++){
             for(int j = 0; j<4; j++){
