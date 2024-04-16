@@ -21,7 +21,6 @@ public interface Cryptor {
             output.write(content);
             content = input.read();
          }
-         
          return;
       }
 
@@ -31,7 +30,6 @@ public interface Cryptor {
             output.write(content);
             content = input.read();
          }
-         
          return;
       }
    }
@@ -44,7 +42,6 @@ public interface Cryptor {
             output.write(content+offset);
             content = input.read();
          }
-         
          return;
       }
 
@@ -55,19 +52,16 @@ public interface Cryptor {
             output.write(content-offset);
             content = input.read();
          }
-
          return;
       }
 
       private static byte deriveOffset(byte [] secrets) {
          final byte START_OFFSET = 0x42;
-
          byte offset = START_OFFSET;
          for (byte b : secrets) {
             // This intentionally overflows.
             offset += b;
          }
-
          return offset;
       }
    }
