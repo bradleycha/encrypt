@@ -73,6 +73,13 @@ public interface Cryptor {
    }
    public static class AES256 implements Cryptor {
       public void encrypt(java.io.InputStream input, java.io.OutputStream output, byte [] secrets) throws java.lang.Exception{
+         //TODO:
+         /*
+          * better block handling
+          better byte manipulation
+          better bit manipulation
+          functionize everything
+          */
          byte[] initial_key = new byte[32];
          byte[][] rcon = new byte[8][4];
          for(int i = 0; i<32; i++){
