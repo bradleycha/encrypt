@@ -123,7 +123,11 @@ public class Main {
 
       byte [] password_salted_bytes = password_salted.getBytes();
 
-      return Sha512.hash(password_salted_bytes);
+      Hasher hasher = new Hasher.Sha512();
+
+      byte [] hash = hasher.digest(password_salted_bytes);
+
+      return hash;
    }
 }
 
