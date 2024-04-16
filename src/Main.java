@@ -32,6 +32,9 @@ public class Main {
          break;
       }
 
+      input.close();
+      output.close();
+
       return;
    }
 
