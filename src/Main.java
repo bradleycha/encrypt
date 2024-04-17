@@ -10,24 +10,22 @@ public class Main {
 
       String password = readPassword(args);
 
-      byte [] secrets = deriveSecrets(password);
+      byte [] secrets      = deriveSecrets(password);
+      byte [] secrets_hash = deriveSecretsHash(secrets);
 
-      Cryptor cryptor = chooseCryptor(args.algorithm);
-
-      // TODO: File hashing.  When encrypting, calculate the file hash and
-      // store it along with the hash length at the start of the encrypted data.
-      // When decrypting, attempt to read the file hash and compare against the
-      // final decrypted data.  This provides protection in the case of file
-      // corruption, or more likely, different encryption algorithms being used
-      // to encrypt and decrypt or an invalid password.  Otherwise, the file
-      // decrypted file data will be nonsense.
-
+      Cryptor cryptor;
       switch (args.mode) {
       case Encrypt:
+         writeHeader(output, args.algorithm, secrets_hash);
+         cryptor = chooseCryptor(args.algorithm);
+
          cryptor.encrypt(input, output, secrets);
          break;
 
       case Decrypt:
+         Cryptor.Algorithm algorithm = readAndVerifyHeader(input, secrets_hash);
+         cryptor = chooseCryptor(algorithm);
+
          cryptor.decrypt(input, output, secrets);
          break;
       }
@@ -129,10 +127,66 @@ public class Main {
 
       return hash;
    }
+
+   // Runs another round of salting+hashing to hash the encryption secrets
+   // for use with the file header (used for checking passwords).
+   private static byte [] deriveSecretsHash(byte [] secrets) {
+      final byte [] SECRETS_SALT = "### ENCRYPT 2024 ###".getBytes();
+
+      byte [] secrets_salted = new byte [secrets.length + SECRETS_SALT.length];
+      System.arraycopy(secrets, 0, secrets_salted, 0, secrets.length);
+      System.arraycopy(SECRETS_SALT, 0, secrets_salted, secrets.length, SECRETS_SALT.length);
+
+      Hasher hasher = new Hasher.Sha512();
+      
+      byte [] hash512 = hasher.digest(secrets_salted);
+      
+      // Compress the 64-byte hash to 4 bytes by XORing every 4th byte with
+      // the previous.  This should help verify passwords without leaking
+      // secrets combined with the 2nd round of salting + hashing.
+      byte [] hash = new byte[Header.HASH_LENGTH];
+      System.arraycopy(hash512, 0, hash, 0, Header.HASH_LENGTH);
+      for (int block_offset = Header.HASH_LENGTH; block_offset < 64; block_offset += Header.HASH_LENGTH) {
+         for (int i = 0; i < Header.HASH_LENGTH; ++i) {
+            hash[i] ^= hash512[block_offset + i];
+         }
+      }
+
+      return hash;
+   }
+
+   // Attempts to write the header to the destination.  'secrets' should be the
+   // 4-byte hash of the real secrets.
+   private static void writeHeader(java.io.OutputStream output, Cryptor.Algorithm algorithm, byte [] secrets) throws java.lang.Exception {
+      Header header = new Header(algorithm, secrets);
+      header.serialize(output);
+      return;
+   }
+
+   // Attempts to read the header from the given file and verifies the algorithm
+   // and password are correct.  'secrets' should be the 4-byte hash of the
+   // real secrets.  Returns the parsed algorithm for the file.
+   private static Cryptor.Algorithm readAndVerifyHeader(java.io.InputStream input, byte [] secrets) throws java.lang.Exception {
+      Header header_read = Header.deserialize(input);
+
+      for (int i = 0; i < Header.HASH_LENGTH; ++i) {
+         if (header_read.hash[i] != secrets[i]) {
+            throw new MalformedHeaderException("password is incorrect");
+         }
+      }
+
+      return header_read.algorithm;
+   }
 }
 
 class ConsoleUnavailableException extends java.lang.Exception {
    public ConsoleUnavailableException(String err) {
+      super(err);
+   }
+}
+
+class MalformedHeaderException extends java.lang.Exception {
+   public MalformedHeaderException(String err) {
       super(err);
    }
 }

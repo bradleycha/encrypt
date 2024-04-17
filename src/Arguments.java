@@ -3,7 +3,7 @@ public class Arguments {
    public String              output;     // output file path
    public String              secrets;    // secreits file path or 'null' for password prompt
    public Mode                mode;       // encryption mode (encrypt or decrypt)
-   public Cryptor.Algorithm   algorithm;  // which algorithm to use for encryption
+   public Cryptor.Algorithm   algorithm;  // which algorithm to use for encryption or 'null' if decrypting
    
    public static enum Mode {
       Encrypt,
@@ -36,6 +36,13 @@ public class Arguments {
       public static class MissingRequiredArgument extends ParseException {
          public MissingRequiredArgument(String argument) {
             super(String.format("missing required argument \'%s\'", argument));
+         }
+      }
+
+      // An invalid argument is present given other arguments
+      public static class InvalidArgumentCombination extends ParseException {
+         public InvalidArgumentCombination(String argument_a, String argument_b) {
+            super(String.format("arguments \'%s\' and \'%s\' may not be combined", argument_a, argument_b));
          }
       }
 
@@ -121,7 +128,7 @@ public class Arguments {
 
       // Takes the current state and finalizes it into a complete Arguments
       // class, throwing an exception if any required arguments are missing.
-      public Arguments finalState() throws ParseException.MissingRequiredArgument {
+      public Arguments finalState() throws ParseException {
          Arguments args = new Arguments();
 
          // Special cases for 'help' and 'version' since they display text
@@ -145,8 +152,11 @@ public class Arguments {
          if (this.output == null) {
             throw new ParseException.MissingRequiredArgument("output");
          }
-         if (this.algorithm == null) {
+         if (this.algorithm == null && (this.mode == null || this.mode == Mode.Encrypt)) {
             throw new ParseException.MissingRequiredArgument("algorithm");
+         }
+         if (this.algorithm != null && (this.mode != null && this.mode == Mode.Decrypt)) {
+            throw new ParseException.InvalidArgumentCombination("algorithm", "mode=decrypt");
          }
 
          args.input     = this.input;
@@ -227,7 +237,10 @@ public class Arguments {
                                           |-------------------------------------
             -a, --algorithm=[algorithm]   | Which encryption/decryption
                                           | algorithm to use with the given
-                                          | files.
+                                          | files.  This should only be
+                                          | specified when encrypting files.
+                                          | The algorithm will be auto-detected
+                                          | when decrypting.
                                           | 
                                           | Valid values:
                                           | plaintext
@@ -235,7 +248,7 @@ public class Arguments {
                                           | aes256
                                           | 
                                           | Default value:
-                                          | none (required argument)
+                                          | none (required for encryption)
          
          ENCRYPTION ALGORITHMS:
             plaintext         | File data is left unencrypted and is untouched. 
