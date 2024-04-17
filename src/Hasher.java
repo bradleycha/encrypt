@@ -11,7 +11,7 @@ public interface Hasher {
 
          // State of the hash digest for each iteration
          long [] state = new long[8];
-         System.arraycopy(state, 0, INITIAL_STATE, 0, 8);
+         System.arraycopy(INITIAL_STATE, 0, state, 0, 8);
 
          // Process each 1024-bit block in the preprocessed data
          for (int i = 0; i < data_preprocessed.length; i += 128) {
@@ -155,7 +155,7 @@ public interface Hasher {
          // Initialize the working variables
          // a = v[0], b = v[1], c=v[2], ...
          long [] v = new long[8];
-         System.arraycopy(v, 0, state, 0, 8);
+         System.arraycopy(state, 0, v, 0, 8);
 
          // Run the magic sauce
          // I have no clue what's happening here but it works I guess :)
