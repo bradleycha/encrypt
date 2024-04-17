@@ -1,6 +1,9 @@
 # EnCrypt
 CLI file encryption and decryption utility.
 
+### Note
+This is currently not finished.  Thus, some functionality may be broken or buggy.
+
 ### Runtime requirements
 [Java Runtime Environment 8 or later](https://www.oracle.com/java/technologies/downloads)
 
